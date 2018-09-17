@@ -1,0 +1,14 @@
+dad528e7da61d54508c9951e1078f7f9 *DESCRIPTION
+bac372c5276a859c63639569be73930e *LICENSE
+f7acab74beed6d397b43ea9e51f627b3 *NAMESPACE
+e9ccd1792a39fa55c92b4983b7618805 *R/data.R
+7146681867ce49c7f9b56460f18ef5cf *README.md
+292606f681d99e3debe5c04c40bb7ee5 *build/vignette.rds
+ccc203b706a514c6cc9b77d9b75d46ef *data/UKgrid.rda
+c69b0964c45b09a87f8252dbffe7cfdd *data/datalist
+c292babd174f823c0c13a64385597053 *inst/doc/UKgrid_vignette.R
+a33d8f0fcee3a9205bc99f0b0afe3b7b *inst/doc/UKgrid_vignette.Rmd
+f9af009c95ed8a814c69a9b300e0cd37 *inst/doc/UKgrid_vignette.html
+d73077b3c67c1045dfe5d4ea574cafd8 *man/UKgrid.Rd
+9811fa479c2c1fc4e0461fcd2cde8b2c *man/extract_grid.Rd
+a33d8f0fcee3a9205bc99f0b0afe3b7b *vignettes/UKgrid_vignette.Rmd
