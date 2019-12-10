@@ -14,8 +14,6 @@
 #'
 #' ND - National Demand is calculated as a sum of generation based on National Grid operational generation metering
 #'
-#' I014_ND - Equivalent to ND (above) but calculated using settlement metered generation data from the I014 file where available
-#'
 #' TSD - Transmission System Demand, This is the Transmission System generation requirement and is equivalent to the Initial Transmission System Outturn (ITSDO) and Transmission System Demand Forecast on BM Reports. Transmission System Demand is equal to the ND plus the additional generation required to meet station load, pump storage pumping and interconnector exports
 #'
 #' I014_TSD - Equivalent to TSD (above), but calculated using settlement metered generation data from the I014 file where available
@@ -30,38 +28,16 @@
 #'
 #' EMBEDDED_SOLAR_CAPACITY - Embedded Solar Capacity, As embedded wind capacity above, but for solar generation
 #'
-#' NON_BM_STOR - Non-BM Short-Term Operating Reserve, Operating reserve for units that are not included in the ND generator definition. This can be in the form of generation or demand reduction
-#'
-#' PUMP_STORAGE_PUMPING - Pump Storage Pumping, The demand due to pumping at hydro pump storage units; the -ve signifies pumping load
-#'
-#' I014_PUMP_STORAGE_PUMPING - As above, but calculated based on settlement data from the I014 file where available
-#'
-#' FRENCH_FLOW - Interconnector Flow, The flow on the respective interconnector. -ve signifies export power out from GB; +ve signifies import power into GB
-#'
-#' BRITNED_FLOW - Interconnector Flow, The flow on the respective interconnector. -ve signifies export power out from GB; +ve signifies import power into GB
-#'
-#' MOYLE_FLOW - Interconnector Flow, The flow on the respective interconnector. -ve signifies export power out from GB; +ve signifies import power into GB
-#'
-#' EAST_WEST_FLOW - Interconnector Flow, The flow on the respective interconnector. -ve signifies export power out from GB; +ve signifies import power into GB
-#'
-#' I014_FRENCH_FLOW - As above (FRENCH_FLOW), but calculated based on settlement data from the I014 file where available
-#'
-#' I014_BRITNED_FLOW - As above (BRITNED_FLOW), but calculated based on settlement data from the I014 file where available
-#'
-#' I014_MOYLE_FLOW - As above (MOYLE_FLOW), but calculated based on settlement data from the I014 file where available
-#'
-#' I014_EAST_WEST_FLOW - As above (EAST_WEST_FLOW), but calculated based on settlement data from the I014 file where available
-#'
 #' @examples
 #' data(UKgrid)
-#' plot(UKgrid$ND)
+#' plot(UKgrid$TIMESTAMP, UKgrid$ND, type = "l")
 
 "UKgrid"
 
 
 #' Extracting and Aggregation of the UKgrid Dataset
 #' @export extract_grid
-#' @param type A character, define the output type - c("xts", "zoo", "ts", "mts", "data.frame", "tbl", "data.table")
+#' @param type A character, define the output type - c(`tsibble`,`xts`, `zoo`, `ts`, `mts`, `data.frame`, `tbl`, `data.table`)
 #' @param columns Selecting the columns names to be used from the UKgrid dataset,
 #' can be either the numeric values of the columns index, or a string with the column names. Please see below the field descriptions
 #' @param start Defines the starting date and time of the data extractions,
@@ -96,33 +72,11 @@
 #'
 #' EMBEDDED_SOLAR_CAPACITY - Embedded Solar Capacity, As embedded wind capacity above, but for solar generation
 #'
-#' NON_BM_STOR - Non-BM Short-Term Operating Reserve, Operating reserve for units that are not included in the ND generator definition. This can be in the form of generation or demand reduction
-#'
-#' PUMP_STORAGE_PUMPING - Pump Storage Pumping, The demand due to pumping at hydro pump storage units; the -ve signifies pumping load
-#'
-#' I014_PUMP_STORAGE_PUMPING - As above, but calculated based on settlement data from the I014 file where available
-#'
-#' FRENCH_FLOW - Interconnector Flow, The flow on the respective interconnector. -ve signifies export power out from GB; +ve signifies import power into GB
-#'
-#' BRITNED_FLOW - Interconnector Flow, The flow on the respective interconnector. -ve signifies export power out from GB; +ve signifies import power into GB
-#'
-#' MOYLE_FLOW - Interconnector Flow, The flow on the respective interconnector. -ve signifies export power out from GB; +ve signifies import power into GB
-#'
-#' EAST_WEST_FLOW - Interconnector Flow, The flow on the respective interconnector. -ve signifies export power out from GB; +ve signifies import power into GB
-#'
-#' I014_FRENCH_FLOW - As above (FRENCH_FLOW), but calculated based on settlement data from the I014 file where available
-#'
-#' I014_BRITNED_FLOW - As above (BRITNED_FLOW), but calculated based on settlement data from the I014 file where available
-#'
-#' I014_MOYLE_FLOW - As above (MOYLE_FLOW), but calculated based on settlement data from the I014 file where available
-#'
-#' I014_EAST_WEST_FLOW - As above (EAST_WEST_FLOW), but calculated based on settlement data from the I014 file where available
-#'
 #' @examples
-#' df <- extract_grid(type = "xts", columns = "ND", start = 2017)
+#' df <- extract_grid(type = "tsibble", columns = "ND", start = 2017)
 #'
 
-extract_grid <- function(type = "xts",
+extract_grid <- function(type = "tsibble",
                          columns = "ND",
                          start = NULL,
                          end = NULL,
@@ -278,14 +232,21 @@ extract_grid <- function(type = "xts",
   }  else if(aggregate == "hourly"){
     df$date <- base::as.Date(df$TIMESTAMP)
     df$hour <- lubridate::hour(df$TIMESTAMP)
-    df1 <- df %>% dplyr::select(-TIMESTAMP) %>%
-    dplyr::group_by(date, hour) %>%
-    dplyr::summarise_all(dplyr::funs(base::sum), na.rm = na.rm) %>%
-      dplyr::mutate_all(dplyr::funs(replace(., . == 0, NA)))
 
-    df1$hour[base::which(base::is.na(df1$hour))] <- 0
+    if(na.rm){
+      df1 <- df %>%
+        dplyr::select(-TIMESTAMP) %>%
+        dplyr::group_by(date, hour) %>%
+        dplyr::summarise_all(~{sum(.x, na.rm = any(!is.na(.x)))})
+    } else {
+      df1 <- df %>%
+        dplyr::select(-TIMESTAMP) %>%
+        dplyr::group_by(date, hour) %>%
+        dplyr::summarise_all(base::list(base::sum), na.rm = FALSE)
+    }
 
-    df1$TIMESTAMP <- lubridate::ymd_h(paste(df1$date, df1$hour, sep = " "), tz = "GMT")
+
+    df1$TIMESTAMP <- lubridate::ymd_h(paste(df1$date, df1$hour, sep = " "), tz = "UTC")
     df1$date <- df1$hour <- NULL
     df1 <- as.data.frame(df1[, c(base::which(base::colnames(df1) == time_stamp), base::which(base::colnames(df1) != time_stamp))])
     frequency <- 24
@@ -294,7 +255,8 @@ extract_grid <- function(type = "xts",
     df$date <- base::as.Date(df$TIMESTAMP)
     df1 <- df %>% dplyr::select(-TIMESTAMP) %>%
       dplyr::group_by(date) %>%
-      dplyr::summarise_all(dplyr::funs(sum), na.rm = na.rm)
+      dplyr::summarise_all(base::list(base::sum), na.rm = na.rm)
+
     df1$TIMESTAMP <- df1$date
     df1$date <-  NULL
     df1 <- as.data.frame(df1[, c(base::which(base::colnames(df1) == time_stamp), base::which(base::colnames(df1) != time_stamp))])
@@ -317,7 +279,7 @@ extract_grid <- function(type = "xts",
 
     df1 <- df %>% dplyr::select(-TIMESTAMP, - date) %>%
       dplyr::group_by(year, week) %>%
-      dplyr::summarise_all(dplyr::funs(sum), na.rm = na.rm)
+      dplyr::summarise_all(base::list(base::sum), na.rm = na.rm)
     } else if(weekly_agg == "index"){
       temp <- index <- NULL
 
@@ -327,12 +289,12 @@ extract_grid <- function(type = "xts",
 
       temp <- df %>% dplyr::select(-TIMESTAMP, -year) %>%
       dplyr::group_by(date) %>%
-        dplyr::summarise_all(dplyr::funs(sum), na.rm = na.rm)
+        dplyr::summarise_all(base::list(base::sum), na.rm = na.rm)
       temp$week <- base::rep(1:base::length(index), each = 7)[1:nrow(temp)]
 
       df1 <- temp %>% dplyr::select(-date) %>%
       dplyr::group_by(week) %>%
-        dplyr::summarise_all(dplyr::funs(sum), na.rm = na.rm)
+        dplyr::summarise_all(base::list(base::sum), na.rm = na.rm)
     }
 
     df1$TIMESTAMP <- base::seq.Date(from = base::as.Date(start_date), by = "weeks", length.out = nrow(df1))
@@ -348,7 +310,7 @@ extract_grid <- function(type = "xts",
     df$year <- lubridate::year(df$TIMESTAMP)
     df1 <- base::suppressMessages(df %>% dplyr::select(-TIMESTAMP, - date) %>%
       dplyr::group_by(year, month) %>%
-      dplyr::summarise_all(dplyr::funs(sum), na.rm = na.rm) %>%
+      dplyr::summarise_all(base::list(base::sum), na.rm = na.rm)  %>%
       dplyr::left_join(df %>%
                          dplyr::group_by(year, month) %>%
                          dplyr::summarise(date = min(date, na.rm = na.rm))))
@@ -364,7 +326,7 @@ extract_grid <- function(type = "xts",
     df$year <- lubridate::year(df$TIMESTAMP)
     df1 <- base::suppressMessages(df %>% dplyr::select(-TIMESTAMP, - date) %>%
       dplyr::group_by(year, quarter) %>%
-      dplyr::summarise_all(dplyr::funs(sum), na.rm = na.rm) %>%
+      dplyr::summarise_all(base::list(base::sum), na.rm = na.rm)  %>%
       dplyr::left_join(df %>%
                          dplyr::group_by(year, quarter) %>%
                          dplyr::summarise(date = min(date, na.rm = na.rm))))
@@ -379,7 +341,7 @@ extract_grid <- function(type = "xts",
     df$year <- lubridate::year(df$TIMESTAMP)
     df1 <- base::suppressMessages(df %>% dplyr::select(-TIMESTAMP, - date) %>%
       dplyr::group_by(year) %>%
-      dplyr::summarise_all(dplyr::funs(sum), na.rm = na.rm) %>%
+      dplyr::summarise_all(base::list(base::sum), na.rm = na.rm)  %>%
       dplyr::left_join(df %>%
                          dplyr::group_by(year) %>%
                          dplyr::summarise(date = min(date, na.rm = na.rm))))
@@ -409,6 +371,18 @@ extract_grid <- function(type = "xts",
     ts.obj <- dplyr::as.tbl(df1)
   } else if(type == "data.table"){
     ts.obj <- data.table::as.data.table(df1)
+  } else if(type == "tsibble"){
+    tsb.obj <- df1
+
+    if(!is.null(aggregate) && aggregate == "monthly"){
+      tsb.obj$TIMESTAMP <- tsibble::yearmonth(tsb.obj$TIMESTAMP)
+      ts.obj <- tsb.obj %>% tsibble::as_tsibble(index = "TIMESTAMP")
+    } else if(!is.null(aggregate) && aggregate == "quarterly"){
+      tsb.obj$TIMESTAMP <- tsibble::yearquarter(tsb.obj$TIMESTAMP)
+      ts.obj <- tsb.obj %>% tsibble::as_tsibble(index = "TIMESTAMP")
+    } else {
+      ts.obj <- tsb.obj %>% tsibble::as_tsibble(index = "TIMESTAMP")
+    }
   }
 
   return(ts.obj)

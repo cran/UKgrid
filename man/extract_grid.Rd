@@ -4,11 +4,11 @@
 \alias{extract_grid}
 \title{Extracting and Aggregation of the UKgrid Dataset}
 \usage{
-extract_grid(type = "xts", columns = "ND", start = NULL, end = NULL,
-  aggregate = NULL, weekly_agg = "index", na.rm = TRUE)
+extract_grid(type = "tsibble", columns = "ND", start = NULL,
+  end = NULL, aggregate = NULL, weekly_agg = "index", na.rm = TRUE)
 }
 \arguments{
-\item{type}{A character, define the output type - c("xts", "zoo", "ts", "mts", "data.frame", "tbl", "data.table")}
+\item{type}{A character, define the output type - c(`tsibble`,`xts`, `zoo`, `ts`, `mts`, `data.frame`, `tbl`, `data.table`)}
 
 \item{columns}{Selecting the columns names to be used from the UKgrid dataset,
 can be either the numeric values of the columns index, or a string with the column names. Please see below the field descriptions}
@@ -53,30 +53,8 @@ EMBEDDED_WIND_CAPACITY - Estimated Embedded Wind Capacity, This is National Grid
 EMBEDDED_SOLAR_GENERATION - Estimated Embedded Solar Generation, As embedded wind generation above, but for solar generation
 
 EMBEDDED_SOLAR_CAPACITY - Embedded Solar Capacity, As embedded wind capacity above, but for solar generation
-
-NON_BM_STOR - Non-BM Short-Term Operating Reserve, Operating reserve for units that are not included in the ND generator definition. This can be in the form of generation or demand reduction
-
-PUMP_STORAGE_PUMPING - Pump Storage Pumping, The demand due to pumping at hydro pump storage units; the -ve signifies pumping load
-
-I014_PUMP_STORAGE_PUMPING - As above, but calculated based on settlement data from the I014 file where available
-
-FRENCH_FLOW - Interconnector Flow, The flow on the respective interconnector. -ve signifies export power out from GB; +ve signifies import power into GB
-
-BRITNED_FLOW - Interconnector Flow, The flow on the respective interconnector. -ve signifies export power out from GB; +ve signifies import power into GB
-
-MOYLE_FLOW - Interconnector Flow, The flow on the respective interconnector. -ve signifies export power out from GB; +ve signifies import power into GB
-
-EAST_WEST_FLOW - Interconnector Flow, The flow on the respective interconnector. -ve signifies export power out from GB; +ve signifies import power into GB
-
-I014_FRENCH_FLOW - As above (FRENCH_FLOW), but calculated based on settlement data from the I014 file where available
-
-I014_BRITNED_FLOW - As above (BRITNED_FLOW), but calculated based on settlement data from the I014 file where available
-
-I014_MOYLE_FLOW - As above (MOYLE_FLOW), but calculated based on settlement data from the I014 file where available
-
-I014_EAST_WEST_FLOW - As above (EAST_WEST_FLOW), but calculated based on settlement data from the I014 file where available
 }
 \examples{
-df <- extract_grid(type = "xts", columns = "ND", start = 2017)
+df <- extract_grid(type = "tsibble", columns = "ND", start = 2017)
 
 }
