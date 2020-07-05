@@ -4,7 +4,9 @@
 \name{UKgrid}
 \alias{UKgrid}
 \title{The UK National Electricity Transmission System Dataset}
-\format{Data frame with timestamp (half-hour intervals)}
+\format{
+Data frame with timestamp (half-hour intervals)
+}
 \source{
 The UK natioanl grid \href{https://www.nationalgrid.com/uk}{website}
 }

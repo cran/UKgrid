@@ -4,8 +4,15 @@
 \alias{extract_grid}
 \title{Extracting and Aggregation of the UKgrid Dataset}
 \usage{
-extract_grid(type = "tsibble", columns = "ND", start = NULL,
-  end = NULL, aggregate = NULL, weekly_agg = "index", na.rm = TRUE)
+extract_grid(
+  type = "tsibble",
+  columns = "ND",
+  start = NULL,
+  end = NULL,
+  aggregate = NULL,
+  weekly_agg = "index",
+  na.rm = TRUE
+)
 }
 \arguments{
 \item{type}{A character, define the output type - c(`tsibble`,`xts`, `zoo`, `ts`, `mts`, `data.frame`, `tbl`, `data.table`)}
